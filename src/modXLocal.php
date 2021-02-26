@@ -26,6 +26,22 @@ class modXLocal extends modX
 
     /**
      * Imitate config loading.
+     * @return array|null
+     */
+    public function getConfig()
+    {
+        if (!$this->_initialized || !is_array($this->config) || empty ($this->config)) {
+            $this->_config= $this->config;
+            if (!$this->_loadConfig()) {
+                $this->log(modX::LOG_LEVEL_FATAL, "Could not load core MODX configuration!");
+                return null;
+            }
+        }
+        return $this->config;
+    }
+
+    /**
+     * Imitate config loading.
      * @param string $configPath
      * @param array $data
      * @param null $driverOptions
