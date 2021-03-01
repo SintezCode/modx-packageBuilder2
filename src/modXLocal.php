@@ -21,17 +21,54 @@ class modXLocal extends modX
      */
     protected $systemOptions=[
         'core_path'=>MODX_CORE_PATH,
-        'log_target'=>'ECHO'
+        'log_target'=>'ECHO',
+        'error_handler_path'=>MODX_CORE_PATH.'model/modx/error/'
     ];
 
-    /**
-     * Imitate config loading.
-     * @return array|null
-     */
+    protected function loadConfig($configPath = '', $data = array(), $driverOptions = null)
+    {
+        if (!defined('MODX_CONFIG_KEY')) {
+            define('MODX_CONFIG_KEY', 'config');
+        }
+        global $config_options;
+
+        return array_merge([
+            xPDO::OPT_CACHE_KEY => 'default',
+            xPDO::OPT_CACHE_HANDLER => 'xPDOFileCache',
+            xPDO::OPT_CACHE_PATH => MODX_CORE_PATH . 'cache/',
+            xPDO::OPT_HYDRATE_FIELDS => true,
+            xPDO::OPT_HYDRATE_RELATED_OBJECTS => true,
+            xPDO::OPT_HYDRATE_ADHOC_FIELDS => true,
+        ],
+            $config_options?:[
+                xPDO::OPT_TABLE_PREFIX => '',
+                'dbtype'=>'mysql',
+                'dbname'=>'local',
+            ],
+            $data?:[]
+        );
+    }
+
+    public function &getConnection(array $options = array())
+    {
+        if(!$this->connection){
+            $this->connection=new  localConnection(
+                $this,
+                'mysql:host=localhost;dbname=local;charset=utf8','','',
+                [xPDO::OPT_CONN_MUTABLE => true]
+            );
+        }
+        return $this->connection;
+    }
+
     public function getConfig()
     {
         if (!$this->_initialized || !is_array($this->config) || empty ($this->config)) {
-            $this->_config= $this->config;
+            if (!defined('MODX_PROCESSORS_PATH'))
+                define('MODX_PROCESSORS_PATH', MODX_CORE_PATH . 'model/modx/processors/');
+            if (!isset ($this->config['processors_path']))
+                $this->config['processors_path'] = MODX_PROCESSORS_PATH;
+            $this->_config = $this->config;
             if (!$this->_loadConfig()) {
                 $this->log(modX::LOG_LEVEL_FATAL, "Could not load core MODX configuration!");
                 return null;
@@ -40,55 +77,18 @@ class modXLocal extends modX
         return $this->config;
     }
 
-    /**
-     * Imitate config loading.
-     * @param string $configPath
-     * @param array $data
-     * @param null $driverOptions
-     * @return array
-     */
-    protected function loadConfig($configPath = '', $data = array(), $driverOptions = null) {
-        return [
-            xPDO::OPT_CACHE_KEY => 'default',
-            xPDO::OPT_CACHE_HANDLER => 'xPDOFileCache',
-            xPDO::OPT_CACHE_PATH => MODX_CORE_PATH . 'cache/',
-            xPDO::OPT_HYDRATE_FIELDS => true,
-            xPDO::OPT_HYDRATE_RELATED_OBJECTS => true,
-            xPDO::OPT_HYDRATE_ADHOC_FIELDS => true,
-            xPDO::OPT_CONNECTIONS => [
-                [
-                    'dsn' => 'mysql:host=localhost;dbname=local;charset=utf8',
-                    'username' => 'local',
-                    'password' => 'local',
-                    'options' => [xPDO::OPT_CONN_MUTABLE => true],
-                    'driverOptions' => [],
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * Imitate config loading.
-     * @return bool
-     */
-    protected function _loadConfig() {
-        $this->config=[
-            'dbtype'=>'mysql',
+    protected function _loadConfig()
+    {
+        $this->config = array_merge($this->config, [
             xPDO::OPT_CACHE_PATH => MODX_CORE_PATH . 'cache/',
             xPDO::OPT_CACHE_FORMAT=>xPDOCacheManager::CACHE_PHP
-        ];
+        ]);
         $this->_systemConfig = $this->config;
         return true;
     }
 
-    /**
-     * Imitate getting objects from DB
-     * @param string $className
-     * @param null $criteria
-     * @param bool $cacheFlag
-     * @return bool|object|null
-     */
-    public function getObject($className, $criteria= null, $cacheFlag= true){
+    public function getObject($className, $criteria= null, $cacheFlag= true)
+    {
         switch(true){
             case $className=='modContext':{
                 $ctx=$this->newObject('modContext',[
@@ -110,18 +110,16 @@ class modXLocal extends modX
         }
     }
 
-    /**
-     * Get local system option before.
-     * @param string $key
-     * @param null $options
-     * @param null $default
-     * @param bool $skipEmpty
-     * @return array|mixed|string|null
-     */
-    public function getOption($key, $options = null, $default = null, $skipEmpty = false){
+    public function getOption($key, $options = null, $default = null, $skipEmpty = false)
+    {
         if($options==null){
             $options=$this->systemOptions;
         }
         return parent::getOption($key, $options , $default, $skipEmpty);
+    }
+
+    protected function _loadExtensionPackages($options = null)
+    {
+
     }
 }
