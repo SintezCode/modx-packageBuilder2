@@ -13,19 +13,25 @@ use modX;
  *
  */
 class packageBuilder{
-    public $modx=null;
-    public $config=[];
+    protected $modx=null;
+    protected $config=[];
+    protected $package;
 
     /**
      * packageBuilder constructor.
      * @param modX $modx
      * @param array $config
      */
-    public function __construct(modX &$modx, array $config=[]){
+    public function __construct(modX &$modx, Package $package, array $config=[]){
         $this->modx=$modx;
+        $this->package=$package;
         $this->config=$config;
 
 
         $this->modx->loadClass('transport.modPackageBuilder','',false, true);
+    }
+
+    public function build(){
+
     }
 }
