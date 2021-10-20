@@ -13,14 +13,25 @@ use modX;
  *
  */
 class packageBuilder{
+    /**
+     * @var modX|null
+     */
     protected $modx=null;
+    /**
+     * @var array
+     * build configuration
+     */
     protected $config=[];
+    /**
+     * @var mixed
+     * package configuration
+     */
     protected $package;
 
     /**
      * packageBuilder constructor.
      * @param modX $modx
-     * @param string $package - JSON or path to JSON file
+     * @param string $package - JSON or path to JSON file with package configuration
      * @param array $config
      */
     public function __construct(modX &$modx, string $package, array $config=[]){
@@ -38,7 +49,11 @@ class packageBuilder{
         $this->modx->loadClass('transport.modPackageBuilder','',false, true);
     }
 
-    public function build(){
+    /**
+     *
+     */
+    public function build():bool{
 
+        return true;
     }
 }
