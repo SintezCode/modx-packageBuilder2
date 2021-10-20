@@ -13,6 +13,9 @@ class Package
     public function increaseVersion(){
 
     }
+    public function toJSON(){
+
+    }
     public function saveTo($path){
 
     }

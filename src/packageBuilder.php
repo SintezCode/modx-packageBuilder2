@@ -20,13 +20,20 @@ class packageBuilder{
     /**
      * packageBuilder constructor.
      * @param modX $modx
+     * @param string $package - JSON or path to JSON file
      * @param array $config
      */
-    public function __construct(modX &$modx, Package $package, array $config=[]){
+    public function __construct(modX &$modx, string $package, array $config=[]){
         $this->modx=$modx;
-        $this->package=$package;
         $this->config=$config;
 
+        if(file_exists($package))$package=file_get_contents($package);
+        /*TODO
+            Тут должна быть валидация $package по json-схеме
+            https://github.com/justinrainbow/json-schema
+            https://habr.com/ru/post/158927/
+        */
+        $this->package=json_decode($package,true);
 
         $this->modx->loadClass('transport.modPackageBuilder','',false, true);
     }
